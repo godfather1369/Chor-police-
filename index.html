@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CHOR POLICE — Real World Hide & Seek</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<style>
+:root{--bg:#080d18;--line:#263650;--text:#f4f7ff;--muted:#9aa9c2;--blue:#5c8cff;--cyan:#4dd8d0;--red:#ff647c;--gold:#ffca67}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 0%,#162644 0,transparent 35%),var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+button,input,select{font:inherit}button{cursor:pointer;border:0;border-radius:12px;padding:12px 16px;font-weight:750;background:var(--blue);color:#fff}button.secondary{background:#24334d;border:1px solid var(--line)}button.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}button:disabled{opacity:.45;cursor:not-allowed}
+.wrap{max-width:1050px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:24px}.brand{display:flex;align-items:center;gap:10px;font-weight:950;letter-spacing:1.5px}.logo{width:40px;height:40px;border-radius:13px;background:linear-gradient(135deg,var(--blue),#8b69ff);display:grid;place-items:center;font-size:22px}.tag{font-size:12px;color:var(--cyan);border:1px solid #245b62;background:#102a36;padding:5px 9px;border-radius:99px}
+.hero{padding:20px 0;max-width:720px}.eyebrow{color:var(--cyan);font-weight:800;letter-spacing:2px;font-size:12px}.hero h1{font-size:clamp(36px,7vw,64px);line-height:1.02;margin:12px 0}.hero h1 span{color:var(--cyan)}.hero p{color:var(--muted);font-size:17px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.card{background:linear-gradient(160deg,#15223a,#101827);border:1px solid var(--line);border-radius:20px;padding:20px}.action{min-height:150px;display:flex;flex-direction:column;justify-content:space-between}.action h2{margin:8px 0 3px}.muted{color:var(--muted)}.small{font-size:12px;color:var(--muted)}
+.screen{display:none}.screen.active{display:block}.form{max-width:680px}.form h2{font-size:28px;margin:0 0 6px}.field{margin:16px 0}.field label{display:block;font-size:13px;font-weight:750;color:#cbd6e9;margin-bottom:7px}.field input,.field select,.inp{width:100%;padding:13px 14px;background:#0b1322;border:1px solid var(--line);border-radius:11px;color:var(--text);outline:none}.row{display:flex;gap:12px}.row>*{flex:1;min-width:0}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.mapbox{height:320px;border-radius:15px;border:1px solid #344762;overflow:hidden;position:relative;background:#14263a linear-gradient(90deg,#20334a 1px,transparent 1px),linear-gradient(#20334a 1px,transparent 1px);background-size:35px 35px;margin:12px 0}
+.radar .ring{position:absolute;left:10%;top:10%;width:80%;height:80%;border:3px dashed var(--cyan);border-radius:50%;background:#36d9c51a}.mapnote{position:absolute;bottom:8px;left:10px;background:#08111ddd;padding:5px 9px;border-radius:8px;font-size:11px;color:#c7d4e8}
+.mk{position:absolute;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:900;border:2px solid #fff;color:#fff}.mk.C{background:#d0405f}.mk.P{background:#3b72e8}.mk.me{background:var(--gold);color:#222}
+.notice{border:1px solid #6b5428;background:#2a2112;color:#ffdc9a;padding:12px;border-radius:12px;font-size:13px;margin:14px 0}.notice.bad{border-color:#80303f;background:#2c1219;color:#ffb3c0}
+.lobbyhead,.bar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}.code{font-size:22px;letter-spacing:3px;font-weight:900;color:var(--cyan)}.teamgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}.team{border-radius:16px;padding:18px;border:1px solid var(--line);background:#111a2b}.team.chor{border-color:#784052}.team.police{border-color:#315a91}.team h3{margin:0 0 5px}.count{font-size:28px;font-weight:900}.pill{display:inline-block;border-radius:99px;padding:3px 9px;font-size:11px;font-weight:800;background:#23344e;color:#c9d8f2}.pill.gold{background:#4a3a14;color:var(--gold)}
+.players{margin-top:12px;display:grid;gap:7px}.player{padding:8px 10px;background:#0b1322;border:1px solid #24334b;border-radius:9px;font-size:13px;display:flex;justify-content:space-between;gap:8px}.player.out{opacity:.45}
+.tabs{display:flex;gap:8px;margin:12px 0}.tabs button{flex:1;padding:9px}.chat{max-height:230px;overflow:auto;display:grid;gap:6px;margin:10px 0}.msg{background:#0b1322;border:1px solid #24334b;border-radius:9px;padding:8px 10px;font-size:13px}.msg.tip{border-color:var(--gold)}img.item{max-width:100%;max-height:260px;border-radius:12px}
+footer{margin:30px 0 10px;color:#687992;font-size:12px;text-align:center}.hidden{display:none!important}
+@media(max-width:620px){.wrap{padding:16px}.grid,.teamgrid{grid-template-columns:1fr}.row{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top"><div class="brand"><div class="logo">⌖</div><div>CHOR <span style="color:var(--cyan)">POLICE</span><div class="small">REAL WORLD HIDE & SEEK</div></div></div><span class="tag">MULTIPLAYER GAME</span></header>
+
+<section id="home" class="screen active">
+ <div class="hero"><div class="eyebrow">YOUR CITY. YOUR TEAM. YOUR MISSION.</div><h1>HIDE. SEEK.<br><span>GET CAUGHT?</span></h1><p>Chors evade the Police. One secret insider can change everything.</p></div>
+ <div class="field" style="max-width:420px"><label>Enter your name</label><input id="myName" placeholder="Your name" maxlength="24"></div>
+ <div class="grid">
+  <div class="card action"><div><h2>＋ Create a room</h2><div class="muted">Set room code, game area on the map and the stolen item.</div></div><button onclick="go('create')">Create room →</button></div>
+  <div class="card action"><div><h2>⌁ Join a room</h2><div class="muted">Enter the room code shared by the host.</div></div><button class="secondary" onclick="go('join')">Enter room code →</button></div>
+ </div>
+ <div class="notice">100% free setup: the host's phone/browser acts as the game server, so the host must keep the page open during the match.</div>
+</section>
+
+<section id="create" class="screen form">
+ <button class="ghost" onclick="show('home')">← Back</button><h2 style="margin-top:18px">Create your room</h2>
+ <div class="row"><div class="field"><label>Room name</label><input id="roomName" placeholder="e.g. Kharghar Night Hunt" maxlength="35"></div><div class="field"><label>Room code</label><input id="roomCode" placeholder="Blank = auto" maxlength="8"></div></div>
+ <div class="field"><label>Maximum players (e.g. 10 = 5 Chor + 5 Police)</label><input id="maxPlayers" type="number" min="4" max="40" value="10"></div>
+ <div class="field"><label>Game area — tap the map to set the centre, slide to set range</label><div id="pickMap" class="mapbox"></div>
+  <input id="radius" type="range" min="100" max="2000" step="50" value="500" style="width:100%"><div class="small">Range radius: <b id="rv">500</b> m <button class="ghost" style="padding:4px 10px;margin-left:8px" onclick="useMyLoc()">Use my location</button></div></div>
+ <div class="field"><label>Stolen item image (shown to every player)</label><input id="itemImage" type="file" accept="image/*"><div id="fileName" class="small"></div></div>
+ <div class="notice">Match lasts 60 minutes. Everyone's location is revealed on the map every 10 minutes. Leaving the range: warning at 50 m from the edge, then 30 seconds to return or you are out.</div>
+ <div class="actions"><button onclick="createRoom()">Create room</button><button class="ghost" onclick="show('home')">Cancel</button></div>
+</section>
+
+<section id="join" class="screen form">
+ <button class="ghost" onclick="show('home')">← Back</button><h2 style="margin-top:18px">Enter room code</h2>
+ <div class="field"><input id="joinCode" placeholder="Room code" maxlength="8"></div>
+ <div class="actions"><button onclick="joinRoom()">Join room</button></div><p id="joinMsg" class="small"></p>
+</section>
+
+<section id="lobby" class="screen">
+ <div class="lobbyhead"><div><div class="eyebrow">ROOM LOBBY</div><h2 id="lobbyTitle" style="margin:4px 0"></h2><div class="code" id="lobbyCode"></div></div><button class="secondary" onclick="copyCode()">Copy code</button></div>
+ <div class="card" style="margin-top:16px"><div class="row"><div><div class="small">PLAYERS</div><div class="count" id="capacity"></div></div><div><div class="small">RANGE</div><div class="count" id="lobbyRange"></div></div><div><div class="small">MATCH</div><div class="count">60 min</div></div></div></div>
+ <div class="card" style="margin-top:14px"><div class="small">STOLEN ITEM</div><img id="lobbyImg" class="item hidden"><div id="noImg" class="muted">No image uploaded.</div></div>
+ <div class="teamgrid">
+  <div class="team chor"><h3>🟠 CHOR</h3><div class="count" id="chorCount">0</div><div class="players" id="chorPlayers"></div><button style="margin-top:12px;background:#a94461" onclick="chooseTeam('Chor')">Join Chor</button></div>
+  <div class="team police"><h3>🔵 POLICE</h3><div class="count" id="policeCount">0</div><div class="players" id="policePlayers"></div><button class="secondary" style="margin-top:12px" onclick="chooseTeam('Police')">Join Police</button></div>
+ </div>
+ <div class="actions"><button id="startBtn" onclick="startMatch()">Start match</button><button class="ghost" onclick="leave()">Leave lobby</button></div><p id="lobbyMsg" class="small"></p>
+</section>
+
+<section id="match" class="screen">
+ <div class="bar"><div><div class="small">TIME LEFT</div><div class="count" id="tLeft">60:00</div></div><div><div class="small">NEXT LOCATION REVEAL</div><div class="count" id="tReveal">10:00</div></div><div><div class="small">YOU</div><div id="role"></div></div></div>
+ <div id="alertBar" class="notice bad hidden"></div>
+ <div id="map" class="mapbox"></div>
+ <label class="small"><input type="checkbox" id="useGps" checked onchange="startGps()"> Use real GPS (untick for demo: tap the map to move yourself)</label>
+ <div class="tabs"><button class="secondary" onclick="setTab('players')">Players</button><button class="secondary" onclick="setTab('item')">Item</button><button class="secondary" id="chatBtn" onclick="setTab('chat')">Secret chat</button><button class="secondary hidden" id="arrestBtn" onclick="setTab('arrest')">Arrest</button></div>
+ <div id="tab-players" class="card"><div class="players" id="mPlayers"></div><div id="feed" class="small" style="margin-top:10px"></div></div>
+ <div id="tab-arrest" class="card hidden"><div class="small">Get within 30 m of a Chor, then arrest them.</div><div class="row" style="margin-top:8px"><select id="arSel" class="inp"></select><button style="flex:0 0 auto" onclick="arrest()">Arrest</button></div></div>
+ <div id="tab-item" class="card hidden"><img id="itemImg" class="item hidden"><div id="itemNone" class="muted">No image uploaded.</div></div>
+ <div id="tab-chat" class="card hidden">
+  <div id="appoint"></div>
+  <div class="chat" id="chatList"></div>
+  <div class="row"><input id="chatIn" class="inp" placeholder="Message to the Chors…" maxlength="200"><button id="chatSend" style="flex:0 0 auto" onclick="sendChat()">Send</button></div>
+  <div id="tipNote" class="small" style="margin-top:6px"></div>
+ </div>
+ <div class="actions"><button class="ghost" onclick="leave()">Leave match</button></div>
+</section>
+<footer>CHOR POLICE • Play safely, only in permitted public areas, with consenting players.</footer>
+</div>
+
+<script>
+const DEF={lat:19.0330,lng:73.0660}, REVEAL=600000, DUR=3600000, TIP=600000, GRACE=30;
+const $=id=>document.getElementById(id), esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let room=null, R=null, me=null, isHost=false, peer=null, conns={}, hostConn=null, off=0, cfg={center:DEF,radius:500,img:''}, pickMv=null, mv=null, myPos=null, gps=null, tab='players', lastSend=0;
+const T=()=>Date.now()+off, fmt=ms=>{const s=Math.ceil(Math.max(0,ms)/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+function dist(a,b){const k=Math.PI/180,x=Math.sin((b.lat-a.lat)*k/2)**2+Math.cos(a.lat*k)*Math.cos(b.lat*k)*Math.sin((b.lng-a.lng)*k/2)**2;return 12742000*Math.asin(Math.sqrt(x))}
+
+/* ---- free map: Leaflet + OpenStreetMap ---- */
+function MapView(el,o){
+ el.innerHTML='';this.bad=!window.L;
+ if(this.bad){el.innerHTML='<div class="mapnote">Map failed to load — check your internet connection.</div>';return}
+ this.map=L.map(el).setView([o.center.lat,o.center.lng],16);
+ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(this.map);
+ this.circ=L.circle([o.center.lat,o.center.lng],{radius:o.radius,color:'#0a9396',fillOpacity:.12}).addTo(this.map);
+ this.layer=L.layerGroup().addTo(this.map);this.fit();
+ if(o.onClick)this.map.on('click',e=>o.onClick({lat:e.latlng.lat,lng:e.latlng.lng}));
+ setTimeout(()=>{this.map.invalidateSize();this.fit()},150);
+}
+MapView.prototype.fit=function(){if(!this.bad)this.map.fitBounds(this.circ.getBounds())};
+MapView.prototype.setCenter=function(c){if(this.bad)return;this.circ.setLatLng([c.lat,c.lng]);this.fit()};
+MapView.prototype.setRadius=function(r){if(this.bad)return;this.circ.setRadius(r);this.fit()};
+MapView.prototype.setMarkers=function(l){if(this.bad)return;this.layer.clearLayers();l.forEach(p=>L.marker([p.lat,p.lng],{title:p.title,icon:L.divIcon({className:'',iconSize:[28,28],iconAnchor:[14,14],html:'<div class="mk '+p.cls+'" style="position:static;margin:0">'+p.label+'</div>'})}).addTo(this.layer))};
+
+/* ---- navigation / setup ---- */
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active')}
+function go(id){const n=$('myName').value.trim();if(!n){alert('Please enter your name first.');return}me=n;show(id);
+ if(id==='create')pickMv=new MapView($('pickMap'),{center:cfg.center,radius:cfg.radius,onClick:c=>{cfg.center=c;pickMv.setCenter(c)}})}
+$('radius').oninput=e=>{cfg.radius=+e.target.value;$('rv').textContent=cfg.radius;pickMv&&pickMv.setRadius(cfg.radius)};
+function useMyLoc(){navigator.geolocation?navigator.geolocation.getCurrentPosition(p=>{cfg.center={lat:p.coords.latitude,lng:p.coords.longitude};pickMv.setCenter(cfg.center)},()=>alert('Location not available — tap the map instead.')):alert('Location not supported.')}
+$('itemImage').onchange=e=>{const f=e.target.files[0];if(!f)return;const im=new Image();im.onload=()=>{const s=Math.min(1,480/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*s;c.height=im.height*s;c.getContext('2d').drawImage(im,0,0,c.width,c.height);cfg.img=c.toDataURL('image/jpeg',.7);$('fileName').textContent=f.name};im.src=URL.createObjectURL(f)};
+const newP=name=>({name,team:null,host:false,shown:null,slot:-1,out:false});
+function leave(){if(gps!=null&&navigator.geolocation)navigator.geolocation.clearWatch(gps);gps=null;if(peer)peer.destroy();peer=null;conns={};hostConn=null;mv=null;myPos=null;room=null;R=null;isHost=false;off=0;show('home')}
+
+/* ---- networking: the host's browser is the game server (PeerJS, free) ---- */
+function createRoom(){
+ const title=$('roomName').value.trim(),max=+$('maxPlayers').value,code=($('roomCode').value.trim()||Math.random().toString(36).slice(2,8)).toUpperCase().replace(/[^A-Z0-9]/g,'');
+ if(!title||!code){alert('Enter a room name and a valid code.');return}if(!(max>=4&&max<=40)){alert('Choose 4–40 players.');return}
+ if(!window.Peer){alert('Multiplayer library failed to load — check your internet.');return}
+ const h=newP(me);h.host=true;R={name:title,code,max,center:cfg.center,radius:cfg.radius,img:cfg.img,status:'lobby',start:0,informer:null,lastTip:0,chat:[],feed:[],winner:null,players:[h]};isHost=true;
+ peer=new Peer('cp-'+code);
+ peer.on('open',()=>{room=view(me);render()});
+ peer.on('connection',c=>c.on('data',m=>{const e=handle(m,c);if(e)c.send({t:'err',msg:e,fatal:m.t==='join'})}));
+ peer.on('error',e=>{if(!room){alert(e.type==='unavailable-id'?'That room code is taken — choose another.':'Network error: '+e.type);leave()}});
+}
+function joinRoom(){
+ const code=$('joinCode').value.trim().toUpperCase(),msg=t=>{$('joinMsg').textContent=t};
+ if(!code){msg('Enter the room code.');return}if(!window.Peer){msg('Multiplayer library failed to load.');return}
+ msg('Connecting…');peer=new Peer();
+ peer.on('open',()=>{hostConn=peer.connect('cp-'+code,{reliable:true});
+  hostConn.on('open',()=>hostConn.send({t:'join',name:me}));
+  hostConn.on('data',m=>{if(m.t==='state'){off=m.now-Date.now();if(!m.room.img&&room)m.room.img=room.img;room=m.room;render()}else if(m.t==='err'){alert(m.msg);if(m.fatal)leave()}});
+  hostConn.on('close',()=>{if(room){alert('The host left — match ended.');leave()}})});
+ peer.on('error',e=>{if(!room){msg(e.type==='peer-unavailable'?'Room not found. Check the code and make sure the host is online.':'Network error: '+e.type);peer&&peer.destroy();peer=null}});
+}
+function send(m){if(isHost){const e=handle(m,null);if(e)alert(e)}else if(hostConn&&hostConn.open)hostConn.send(m)}
+function view(n){ // what each player is allowed to know
+ const p=R.players.find(x=>x.name===n),inf=R.informer===n,ok=(p&&p.team==='Chor')||inf,v=JSON.parse(JSON.stringify(R));
+ v.players.forEach(x=>{delete x.pos;delete x.outAt});v.informer=ok?R.informer:null;v.chat=ok?R.chat:[];v.lastTip=inf?R.lastTip:0;return v}
+function broadcast(){for(const n in conns){const c=conns[n];if(!c.open)continue;const v=view(n);if(c.imgSent)delete v.img;else c.imgSent=true;c.send({t:'state',now:Date.now(),room:v})}room=view(me);render()}
+function handle(m,c){
+ const n=c?(m.t==='join'?String(m.name).slice(0,24):c.pname):me;
+ if(m.t==='join'){let p=R.players.find(x=>x.name===n);
+  if(!p){if(R.status!=='lobby')return 'Match already started.';if(R.players.length>=R.max)return 'Room is full.';R.players.push(newP(n))}
+  c.pname=n;conns[n]=c;return broadcast()}
+ const p=R.players.find(x=>x.name===n);if(!p)return;
+ if(m.t==='pos'){if(m.pos&&isFinite(m.pos.lat)&&isFinite(m.pos.lng))p.pos={lat:+m.pos.lat,lng:+m.pos.lng};return}
+ if(m.t==='team'){if(R.status!=='lobby'||!['Chor','Police'].includes(m.team)||p.team===m.team)return;
+  if(R.players.filter(x=>x.team===m.team).length>=Math.ceil(R.max/2))return m.team+' team is full.';p.team=m.team}
+ else if(m.t==='start'){if(!p.host||R.status!=='lobby')return;
+  if(R.players.some(x=>!x.team))return 'Everyone must pick a team first.';
+  if(!R.players.some(x=>x.team==='Chor')||!R.players.some(x=>x.team==='Police'))return 'Need at least one Chor and one Police.';
+  R.status='live';R.start=Date.now()}
+ else if(m.t==='appoint'){if(p.team!=='Chor'||R.informer)return;const q=R.players.find(x=>x.name===m.name&&x.team==='Police'&&!x.out);if(q)R.informer=q.name}
+ else if(m.t==='chat'){const inf=R.informer===n;if(p.team!=='Chor'&&!inf)return;const t=String(m.text||'').trim().slice(0,200);if(!t)return;
+  if(inf){if(R.lastTip&&Date.now()-R.lastTip<TIP)return 'Next tip is not allowed yet.';R.lastTip=Date.now()}
+  R.chat.push({from:n,text:t,tip:inf})}
+ else if(m.t==='arrest'){if(R.status!=='live'||p.team!=='Police'||p.out)return;const q=R.players.find(x=>x.name===m.name&&x.team==='Chor'&&!x.out&&!x.caught);if(!q)return 'That Chor is not available.';
+  if(!p.pos||!q.pos)return 'Waiting for GPS signal.';if(dist(p.pos,q.pos)>30)return 'Too far — get within 30 m of the Chor.';
+  q.caught=true;R.feed.push('🚔 '+n+' arrested '+q.name);checkEnd()}
+ else return;
+ broadcast()}
+function checkEnd(){if(R.status!=='live')return;const a=t=>R.players.some(x=>x.team===t&&!x.out&&!x.caught);
+ if(!a('Chor')){R.status='over';R.winner='Police'}else if(!a('Police')){R.status='over';R.winner='Chor'}}
+setInterval(()=>{ // server clock (host only): 10-min reveals, boundary rule, match end
+ if(!isHost||!R||R.status!=='live')return;const now=Date.now(),el=now-R.start;
+ if(el>=DUR){R.status='over';R.winner='Chor';return broadcast()}
+ const slot=Math.floor(el/REVEAL);let ch=false;
+ R.players.forEach(p=>{if(p.out||p.caught||!p.pos)return;
+  if(p.slot!==slot){p.shown=p.pos;p.shownAt=now;p.slot=slot;ch=true}
+  if(dist(p.pos,R.center)>R.radius){p.outAt=p.outAt||now;if(now-p.outAt>GRACE*1000){p.out=true;ch=true;R.feed.push('🚧 '+p.name+' left the area and is out')}}else p.outAt=null});
+ checkEnd();if(ch||R.status==='over')broadcast()},1000);
+
+/* ---- UI ---- */
+const meP=()=>room.players.find(p=>p.name===me);
+function render(){if(!room)return;if(room.status==='lobby'){show('lobby');renderLobby()}else{show('match');renderMatch()}}
+function copyCode(){navigator.clipboard?navigator.clipboard.writeText(room.code).then(()=>alert('Code copied!')):alert('Code: '+room.code)}
+function chooseTeam(t){send({t:'team',team:t})}
+function startMatch(){send({t:'start'})}
+function renderLobby(){
+ $('lobbyTitle').textContent=room.name;$('lobbyCode').textContent=room.code;$('capacity').textContent=room.players.length+' / '+room.max;$('lobbyRange').textContent=room.radius+' m';
+ $('lobbyImg').classList.toggle('hidden',!room.img);$('noImg').classList.toggle('hidden',!!room.img);if(room.img)$('lobbyImg').src=room.img;
+ for(const t of['Chor','Police']){const l=room.players.filter(p=>p.team===t);$(t.toLowerCase()+'Count').textContent=l.length;$(t.toLowerCase()+'Players').innerHTML=l.map(p=>'<div class="player">'+esc(p.name)+(p.host?'<span class="pill">HOST</span>':'')+'</div>').join('')}
+ const un=room.players.filter(p=>!p.team).map(p=>esc(p.name));$('lobbyMsg').innerHTML=un.length?'Waiting for team choice: '+un.join(', '):'';
+ $('startBtn').classList.toggle('hidden',!meP().host)}
+function setTab(t){tab=t;if(room)renderMatch()}
+function renderMatch(){
+ const p=meP();if(!p)return;
+ if(!mv){mv=new MapView($('map'),{center:room.center,radius:room.radius,onClick:c=>{if(!$('useGps').checked)setMyPos(c)}});startGps()}
+ const inf=room.informer===me,chor=p.team==='Chor',chat=chor||inf;
+ $('role').innerHTML='<span class="pill">'+p.team.toUpperCase()+'</span>'+(inf?' <span class="pill gold">SECRET INFORMER</span>':'')+(p.out?' <span class="pill">OUT</span>':'')+(p.caught?' <span class="pill">CAUGHT</span>':'');
+ $('chatBtn').classList.toggle('hidden',!chat);if(tab==='chat'&&!chat)tab='players';
+ $('arrestBtn').classList.toggle('hidden',p.team!=='Police'||room.status!=='live');if(tab==='arrest'&&(p.team!=='Police'||room.status!=='live'))tab='players';
+ for(const t of['players','item','chat','arrest'])$('tab-'+t).classList.toggle('hidden',t!==tab);
+ $('mPlayers').innerHTML=room.players.map(x=>'<div class="player'+((x.out||x.caught)?' out':'')+'"><span>'+esc(x.name)+' <span class="pill">'+x.team+'</span></span><span class="small">'+(x.out?'OUT':x.caught?'CAUGHT':x.shownAt?'seen '+new Date(x.shownAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'no signal')+'</span></div>').join('');
+ const ch=room.players.filter(x=>x.team==='Chor'&&!x.out&&!x.caught).map(x=>esc(x.name)),sg=ch.join('|');if(p.team==='Police'&&$('arSel').dataset.sig!==sg){$('arSel').innerHTML=ch.map(x=>'<option>'+x+'</option>').join('');$('arSel').dataset.sig=sg}
+ $('feed').innerHTML=(room.feed||[]).slice(-8).map(esc).join('<br>');
+ $('itemImg').classList.toggle('hidden',!room.img);$('itemNone').classList.toggle('hidden',!!room.img);if(room.img)$('itemImg').src=room.img;
+ if(chat){
+  let ap='';if(chor){if(room.informer)ap='<div class="notice" style="margin-top:0">🕵 Your informer: <b>'+esc(room.informer)+'</b> (hidden from other Police)</div>';
+   else ap='<div class="row" style="margin-bottom:10px"><select id="apSel" class="inp">'+room.players.filter(x=>x.team==='Police'&&!x.out).map(x=>'<option>'+esc(x.name)+'</option>').join('')+'</select><button style="flex:0 0 auto" onclick="appoint()">Appoint informer</button></div>'}
+  else ap='<div class="notice" style="margin-top:0">The Chors secretly appointed you. You may send one tip every 10 minutes.</div>';
+  const sig=ap+room.informer;if($('appoint').dataset.sig!==sig){$('appoint').innerHTML=ap;$('appoint').dataset.sig=sig}
+  $('chatList').innerHTML=room.chat.map(m=>'<div class="msg'+(m.tip?' tip':'')+'"><b>'+(m.tip?'🕵 ':'')+esc(m.from)+':</b> '+esc(m.text)+'</div>').join('')||'<div class="small">No messages yet.</div>';$('chatList').scrollTop=1e9}
+ drawMarkers();tick()}
+function drawMarkers(){
+ if(!mv)return;const l=[];
+ room.players.forEach(x=>{if(x.shown&&!x.out&&!x.caught&&x.name!==me)l.push({lat:x.shown.lat,lng:x.shown.lng,label:x.team[0],cls:x.team[0],title:x.name+' ('+x.team+')'})});
+ if(myPos)l.push({lat:myPos.lat,lng:myPos.lng,label:'ME',cls:'me',title:'You'});mv.setMarkers(l)}
+function setMyPos(p){myPos=p;drawMarkers();if(Date.now()-lastSend>5000){lastSend=Date.now();send({t:'pos',pos:p})}}
+function startGps(){
+ if(gps!=null){navigator.geolocation.clearWatch(gps);gps=null}
+ if(!$('useGps').checked){if(!myPos)setMyPos(room.center);return}
+ if(!navigator.geolocation){$('useGps').checked=false;return startGps()}
+ gps=navigator.geolocation.watchPosition(p=>setMyPos({lat:p.coords.latitude,lng:p.coords.longitude}),()=>{$('useGps').checked=false;startGps()},{enableHighAccuracy:true,maximumAge:5000})}
+function arrest(){const n=$('arSel').value;if(n)send({t:'arrest',name:n})}
+function appoint(){const n=$('apSel')&&$('apSel').value;if(n)send({t:'appoint',name:n})}
+function sendChat(){const t=$('chatIn').value.trim();if(t){send({t:'chat',text:t});$('chatIn').value=''}}
+$('chatIn').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat()});
+function tick(){ // display only; the host enforces the rules
+ if(!room||room.status==='lobby')return;const now=T(),el=now-room.start,p=meP();if(!p)return;const bar=$('alertBar');
+ const over=room.status==='over';
+ $('tLeft').textContent=over?'00:00':fmt(DUR-el);$('tReveal').textContent=over?'—':fmt(REVEAL-el%REVEAL);
+ let msg='';
+ if(over)msg='Match over! '+(room.winner==='Police'?'🚔 Police win!':'🟠 Chors win!');
+ else if(p.caught)msg='You were caught!';
+ else if(p.out)msg='You were disqualified for leaving the area.';
+ else if(myPos){const d=dist(myPos,room.center);
+  if(d>room.radius)msg='⚠ Outside the game area! Return within 30 seconds or you are out.';
+  else if(d>room.radius-50)msg='⚠ You are within 50 m of the boundary.'}
+ bar.textContent=msg;bar.classList.toggle('hidden',!msg);
+ const inf=room.informer===me,wait=inf?room.lastTip+TIP-now:0,blocked=inf&&wait>0;
+ $('chatSend').disabled=blocked;$('tipNote').textContent=blocked?'Next informer tip in '+fmt(wait):inf?'You can send a tip now.':'';
+}
+setInterval(tick,1000);
+</script>
+</body></html>
