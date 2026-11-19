@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CHOR POLICE — Real World Hide & Seek</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<style>
+:root{--bg:#080d18;--line:#263650;--text:#f4f7ff;--muted:#9aa9c2;--blue:#5c8cff;--cyan:#4dd8d0;--red:#ff647c;--gold:#ffca67}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 0%,#162644 0,transparent 35%),var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+button,input,select{font:inherit}button{cursor:pointer;border:0;border-radius:12px;padding:12px 16px;font-weight:750;background:var(--blue);color:#fff}button.secondary{background:#24334d;border:1px solid var(--line)}button.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}button:disabled{opacity:.45;cursor:not-allowed}
+.wrap{max-width:1050px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:24px}.brand{display:flex;align-items:center;gap:10px;font-weight:950;letter-spacing:1.5px}.logo{width:40px;height:40px;border-radius:13px;background:linear-gradient(135deg,var(--blue),#8b69ff);display:grid;place-items:center;font-size:22px}.tag{font-size:12px;color:var(--cyan);border:1px solid #245b62;background:#102a36;padding:5px 9px;border-radius:99px}
+.hero{padding:20px 0;max-width:720px}.eyebrow{color:var(--cyan);font-weight:800;letter-spacing:2px;font-size:12px}.hero h1{font-size:clamp(36px,7vw,64px);line-height:1.02;margin:12px 0}.hero h1 span{color:var(--cyan)}.hero p{color:var(--muted);font-size:17px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.card{background:linear-gradient(160deg,#15223a,#101827);border:1px solid var(--line);border-radius:20px;padding:20px}.action{min-height:150px;display:flex;flex-direction:column;justify-content:space-between}.action h2{margin:8px 0 3px}.muted{color:var(--muted)}.small{font-size:12px;color:var(--muted)}
+.screen{display:none}.screen.active{display:block}.form{max-width:680px}.form h2{font-size:28px;margin:0 0 6px}.field{margin:16px 0}.field label{display:block;font-size:13px;font-weight:750;color:#cbd6e9;margin-bottom:7px}.field input,.field select,.inp{width:100%;padding:13px 14px;background:#0b1322;border:1px solid var(--line);border-radius:11px;color:var(--text);outline:none}.row{display:flex;gap:12px}.row>*{flex:1;min-width:0}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.mapbox{height:320px;border-radius:15px;border:1px solid #344762;overflow:hidden;position:relative;background:#14263a linear-gradient(90deg,#20334a 1px,transparent 1px),linear-gradient(#20334a 1px,transparent 1px);background-size:35px 35px;margin:12px 0}
+.radar .ring{position:absolute;left:10%;top:10%;width:80%;height:80%;border:3px dashed var(--cyan);border-radius:50%;background:#36d9c51a}.mapnote{position:absolute;bottom:8px;left:10px;background:#08111ddd;padding:5px 9px;border-radius:8px;font-size:11px;color:#c7d4e8}
+.mk{position:absolute;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:900;border:2px solid #fff;color:#fff}.mk.C{background:#d0405f}.mk.P{background:#3b72e8}.mk.me{background:var(--gold);color:#222}
+.notice{border:1px solid #6b5428;background:#2a2112;color:#ffdc9a;padding:12px;border-radius:12px;font-size:13px;margin:14px 0}.notice.bad{border-color:#80303f;background:#2c1219;color:#ffb3c0}
+.lobbyhead,.bar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}.code{font-size:22px;letter-spacing:3px;font-weight:900;color:var(--cyan)}.teamgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}.team{border-radius:16px;padding:18px;border:1px solid var(--line);background:#111a2b}.team.chor{border-color:#784052}.team.police{border-color:#315a91}.team h3{margin:0 0 5px}.count{font-size:28px;font-weight:900}.pill{display:inline-block;border-radius:99px;padding:3px 9px;font-size:11px;font-weight:800;background:#23344e;color:#c9d8f2}.pill.gold{background:#4a3a14;color:var(--gold)}
+.players{margin-top:12px;display:grid;gap:7px}.player{padding:8px 10px;background:#0b1322;border:1px solid #24334b;border-radius:9px;font-size:13px;display:flex;justify-content:space-between;gap:8px}.player.out{opacity:.45}
+.tabs{display:flex;gap:8px;margin:12px 0}.tabs button{flex:1;padding:9px}.chat{max-height:230px;overflow:auto;display:grid;gap:6px;margin:10px 0}.msg{background:#0b1322;border:1px solid #24334b;border-radius:9px;padding:8px 10px;font-size:13px}.msg.tip{border-color:var(--gold)}img.item{max-width:100%;max-height:260px;border-radius:12px}
+footer{margin:30px 0 10px;color:#687992;font-size:12px;text-align:center}.hidden{display:none!important}
+@media(max-width:620px){.wrap{padding:16px}.grid,.teamgrid{grid-template-columns:1fr}.row{flex-direction:column}}
+.mtoggle{position:absolute;top:8px;right:8px;z-index:1000;padding:6px 10px;font-size:12px;border-radius:10px;background:#08111dd9;border:1px solid #ffffff55;color:#fff}.mk.X{background:#6b7280}.toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#a8324a;color:#fff;padding:10px 16px;border-radius:12px;z-index:9999;max-width:90%;font-weight:700;box-shadow:0 6px 24px #0008;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top"><div class="brand"><div class="logo">⌖</div><div>CHOR <span style="color:var(--cyan)">POLICE</span><div class="small">REAL WORLD HIDE & SEEK</div></div></div><span class="tag">MULTIPLAYER GAME</span></header>
+
+<section id="home" class="screen active">
+ <div class="hero"><div class="eyebrow">YOUR CITY. YOUR TEAM. YOUR MISSION.</div><h1>HIDE. SEEK.<br><span>GET CAUGHT?</span></h1><p>Chors evade the Police. One secret insider can change everything.</p></div>
+ <div class="field" style="max-width:420px"><label>Enter your name</label><input id="myName" placeholder="Your name" maxlength="24"></div>
+ <div class="grid">
+  <div class="card action"><div><h2>＋ Create a room</h2><div class="muted">Set room code, game area on the map and the stolen item.</div></div><button onclick="go('create')">Create room →</button></div>
+  <div class="card action"><div><h2>⌁ Join a room</h2><div class="muted">Enter the room code shared by the host.</div></div><button class="secondary" onclick="go('join')">Enter room code →</button></div>
+ </div>
+ <div class="notice">100% free setup: the host's phone/browser acts as the game server, so the host must keep the page open during the match.</div>
+</section>
+
+<section id="create" class="screen form">
+ <button class="ghost" onclick="cancelCreate()">← Back</button><h2 id="createTitle" style="margin-top:18px">Create your room</h2>
+ <div class="row"><div class="field"><label>Room name</label><input id="roomName" placeholder="e.g. Kharghar Night Hunt" maxlength="35"></div><div class="field"><label>Room code</label><input id="roomCode" placeholder="Blank = auto" maxlength="8"></div></div>
+ <div class="field"><label>Maximum players (e.g. 10 = 5 Chor + 5 Police)</label><input id="maxPlayers" type="number" min="4" max="40" value="10"></div>
+ <div class="field"><label>Game area — the map opens at YOUR location. Tap to move the centre, slide to set the range</label><button class="secondary" style="margin-bottom:8px" onclick="useMyLoc()">📍 Use my location</button><div class="notice mapNote hidden" style="margin:0 0 8px"></div><div id="pickMap" class="mapbox"></div>
+  <input id="radius" type="range" min="100" max="2000" step="50" value="500" style="width:100%"><div class="small">Range radius: <b id="rv">500</b> m</div></div>
+ <div class="field"><label>Stolen item image (shown to every player)</label><input id="itemImage" type="file" accept="image/*"><div id="fileName" class="small"></div></div>
+ <div class="notice">Match lasts 60 minutes. Everyone's location is revealed on the map every 10 minutes. Leaving the range: warning at 50 m from the edge, then 30 seconds to return or you are out.</div>
+ <div class="actions"><button id="saveBtn" onclick="saveRoom()">Create room</button><button class="ghost" onclick="cancelCreate()">Cancel</button></div>
+</section>
+
+<section id="join" class="screen form">
+ <button class="ghost" onclick="show('home')">← Back</button><h2 style="margin-top:18px">Enter room code</h2>
+ <div class="field"><input id="joinCode" placeholder="Room code" maxlength="8"></div>
+ <div class="actions"><button onclick="joinRoom()">Join room</button></div><p id="joinMsg" class="small"></p>
+</section>
+
+<section id="lobby" class="screen">
+ <div class="notice bad netNote hidden"></div>
+ <div class="lobbyhead"><div><div class="eyebrow">ROOM LOBBY</div><h2 id="lobbyTitle" style="margin:4px 0"></h2><div class="code" id="lobbyCode"></div></div><button class="secondary" onclick="copyCode()">Copy code</button></div>
+ <div class="card" style="margin-top:16px"><div class="row"><div><div class="small">PLAYERS</div><div class="count" id="capacity"></div></div><div><div class="small">RANGE</div><div class="count" id="lobbyRange"></div></div><div><div class="small">MATCH</div><div class="count">60 min</div></div></div></div>
+ <div class="card" style="margin-top:14px"><div class="small">STOLEN ITEM</div><img id="lobbyImg" class="item hidden"><div id="noImg" class="muted">No image uploaded.</div></div>
+ <div class="teamgrid">
+  <div class="team chor"><h3>🟠 CHOR</h3><div class="count" id="chorCount">0</div><div class="players" id="chorPlayers"></div><button style="margin-top:12px;background:#a94461" onclick="chooseTeam('Chor')">Join Chor</button></div>
+  <div class="team police"><h3>🔵 POLICE</h3><div class="count" id="policeCount">0</div><div class="players" id="policePlayers"></div><button class="secondary" style="margin-top:12px" onclick="chooseTeam('Police')">Join Police</button></div>
+ </div>
+ <div class="notice bad gpsNote hidden"></div>
+ <div class="actions"><button id="startBtn" onclick="startMatch()">Start match</button><button id="editBtn" class="secondary hidden" onclick="editRoom()">✎ Edit room</button><button class="ghost" onclick="confirmLeave()">← Leave lobby</button></div><p id="lobbyMsg" class="small"></p>
+</section>
+
+<section id="match" class="screen">
+ <div class="notice bad netNote hidden"></div>
+ <div class="bar"><div><div class="small">TIME LEFT</div><div class="count" id="tLeft">60:00</div></div><div><div class="small">NEXT LOCATION REVEAL</div><div class="count" id="tReveal">10:00</div></div><div><div class="small">YOU</div><div id="role"></div></div></div>
+ <div id="score" class="card" style="padding:10px 14px;margin:10px 0"></div>
+ <div id="alertBar" class="notice bad hidden"></div>
+ <div class="notice bad gpsNote hidden"></div>
+ <div class="notice mapNote hidden"></div>
+ <div id="map" class="mapbox"></div>
+ <label class="small"><input type="checkbox" id="useGps" checked onchange="startGps()"> Use real GPS (untick only for testing alone: then tap the map to move yourself)</label>
+ <div class="tabs"><button class="secondary" onclick="setTab('players')">Players</button><button class="secondary" onclick="setTab('item')">Item</button><button class="secondary" id="chatBtn" onclick="setTab('chat')">Secret chat</button><button class="secondary hidden" id="arrestBtn" onclick="setTab('arrest')">I was caught</button></div>
+ <div id="tab-players" class="card"><div class="players" id="mPlayers"></div><div id="feed" class="small" style="margin-top:10px"></div></div>
+ <div id="tab-arrest" class="card hidden"><div class="small">Caught by a Police player? Choose who caught you and confirm here, on your own phone. It only works if they are within 30 m of you.</div><div class="row" style="margin-top:8px"><select id="arSel" class="inp"></select><button style="flex:0 0 auto" onclick="iWasCaught()">I was caught</button></div></div>
+ <div id="tab-item" class="card hidden"><img id="itemImg" class="item hidden"><div id="itemNone" class="muted">No image uploaded.</div></div>
+ <div id="tab-chat" class="card hidden">
+  <div id="appoint"></div>
+  <div class="chat" id="chatList"></div>
+  <div class="row"><input id="chatIn" class="inp" placeholder="Message to the Chors…" maxlength="200"><button id="chatSend" style="flex:0 0 auto" onclick="sendChat()">Send</button></div>
+  <div id="tipNote" class="small" style="margin-top:6px"></div>
+ </div>
+ <div class="actions"><button id="endBtn" class="secondary hidden" onclick="endMatch()">End match → back to lobby</button><button class="ghost" onclick="confirmLeave()">Leave match</button></div>
+</section>
+<div id="toast" class="toast hidden"></div>
+<footer>CHOR POLICE • Play safely, only in permitted public areas, with consenting players.</footer>
+</div>
+
+<script>
+const DEF={lat:19.0330,lng:73.0660}, REVEAL=600000, DUR=3600000, TIP=600000, GRACE=30;
+const $=id=>document.getElementById(id), esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let gpsOn=false, room=null, R=null, me=null, isHost=false, peer=null, conns={}, hostConn=null, off=0, cfg={center:DEF,radius:500,img:''}, pickMv=null, mv=null, myPos=null, gps=null, tab='players', lastSend=0;
+const T=()=>Date.now()+off, fmt=ms=>{const s=Math.ceil(Math.max(0,ms)/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+function dist(a,b){const k=Math.PI/180,x=Math.sin((b.lat-a.lat)*k/2)**2+Math.cos(a.lat*k)*Math.cos(b.lat*k)*Math.sin((b.lng-a.lng)*k/2)**2;return 12742000*Math.asin(Math.sqrt(x))}
+
+/* ---- free map: Leaflet + OpenStreetMap ---- */
+window.addEventListener('load',()=>setTimeout(()=>{ // backup CDN if the first one is blocked
+ const d=document.createElement('div');d.className='leaflet-pane';document.body.appendChild(d);const cssOk=getComputedStyle(d).position==='absolute';d.remove();
+ if(!cssOk){const l=document.createElement('link');l.rel='stylesheet';l.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(l)}
+ if(!window.L){const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';document.head.appendChild(s)}
+ if(!window.Peer){const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js';document.head.appendChild(s)}},800));
+function MapView(el,o){
+ if(el._mv&&el._mv.map){try{el._mv.map.remove()}catch(e){}}el._mv=this;el.innerHTML='';this.bad=!window.L;
+ if(this.bad){el.innerHTML='<div class="mapnote">Map failed to load.</div>';mapNote('The map library did not load. Check your internet, turn off any ad-blocker, then reload.');return}
+ this.map=L.map(el).setView([o.center.lat,o.center.lng],16);
+ let bad=0;const self=this;
+ const street=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'});
+ const sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,maxNativeZoom:18,attribution:'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community'});
+ const labels=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,maxNativeZoom:18});
+ const err=()=>{if(++bad===3)mapNote('The map pictures are not loading. Check your internet or mobile data, and open the game in Chrome or Safari (not inside WhatsApp or Instagram). You can also try the Map view button on the map.')};
+ [street,sat,labels].forEach(l=>{l.on('tileerror',err);l.on('tileload',()=>{if(bad>=3)mapNote('');bad=-999})});
+ const btn=document.createElement('button');btn.className='mtoggle';
+ this.applyMode=()=>{[street,sat,labels].forEach(l=>self.map.removeLayer(l));
+  if(mapMode==='sat'){sat.addTo(self.map);labels.addTo(self.map);btn.textContent='🗺 Map view'}else{street.addTo(self.map);btn.textContent='🛰 Satellite'}
+  if(self.circ)self.circ.setStyle({color:mapMode==='sat'?'#ffe082':'#0a9396'})};
+ btn.onclick=()=>{mapMode=mapMode==='sat'?'street':'sat';try{localStorage.setItem('cpMap',mapMode)}catch(x){}bad=0;self.applyMode()};
+ L.DomEvent.disableClickPropagation(btn);el.appendChild(btn);
+ this.circ=L.circle([o.center.lat,o.center.lng],{radius:o.radius,color:'#0a9396',fillOpacity:.12}).addTo(this.map);this.applyMode();
+ this.layer=L.layerGroup().addTo(this.map);this.fit();
+ if(o.onClick)this.map.on('click',e=>o.onClick({lat:e.latlng.lat,lng:e.latlng.lng}));
+ setTimeout(()=>{this.map.invalidateSize();this.fit()},150);setTimeout(()=>{this.map.invalidateSize();this.fit()},800);
+}
+MapView.prototype.fit=function(){if(!this.bad)this.map.fitBounds(this.circ.getBounds())};
+MapView.prototype.setCenter=function(c){if(this.bad)return;this.circ.setLatLng([c.lat,c.lng]);this.fit()};
+MapView.prototype.setRadius=function(r){if(this.bad)return;this.circ.setRadius(r);this.fit()};
+MapView.prototype.setMarkers=function(l){if(this.bad)return;this.layer.clearLayers();l.forEach(p=>L.marker([p.lat,p.lng],{title:p.title,icon:L.divIcon({className:'',iconSize:[28,28],iconAnchor:[14,14],html:'<div class="mk '+p.cls+'" style="position:static;margin:0">'+p.label+'</div>'})}).addTo(this.layer))};
+
+/* ---- navigation / setup ---- */
+let mapMode=(()=>{try{return localStorage.getItem('cpMap')||'sat'}catch(e){return 'sat'}})();
+let cur='home',editing=false,lastState=0,snap=null,recon=false,curCode='',seenFeed=-1,lastBc=0,toastT=null;
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');cur=id;if(!history.state||history.state.s!==id)history.pushState({s:id},'')}
+window.addEventListener('popstate',()=>{ // phone/browser Back button
+ if(cur==='create')cancelCreate();else if(cur==='join')show('home');
+ else if(cur==='lobby'||cur==='match'){history.pushState({s:cur},'');confirmLeave()}});
+function confirmLeave(){const m=isHost?(room.backup?room.backup+' will take over as host and the game keeps running. Leave?':'You are the only one here, so leaving closes the room. Leave?'):'Leave this room? You can rejoin with the same name and room code.';if(confirm(m))leave()}
+function netMsg(t){document.querySelectorAll('.netNote').forEach(e=>{e.textContent=t;e.classList.toggle('hidden',!t)})}
+function toast(t){const e=$('toast');e.textContent=t;e.classList.remove('hidden');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.add('hidden'),8000)}
+const secure=()=>location.protocol==='https:'||['localhost','127.0.0.1'].includes(location.hostname);
+function mapNote(t){document.querySelectorAll('.mapNote').forEach(e=>{e.textContent=t;e.classList.toggle('hidden',!t)})}
+function gpsMsg(t){document.querySelectorAll('.gpsNote').forEach(e=>{e.textContent=t;e.classList.toggle('hidden',!t)})}
+function go(id){const n=$('myName').value.trim();if(!n){alert('Please enter your name first.');return}me=n;show(id);
+ if(id==='create')openCreate(false)}
+function openCreate(edit){
+ editing=edit;$('createTitle').textContent=edit?'Edit your room':'Create your room';$('saveBtn').textContent=edit?'Save changes':'Create room';$('roomCode').disabled=edit;
+ if(edit){$('roomName').value=R.name;$('roomCode').value=R.code;$('maxPlayers').value=R.max;cfg.center=R.center;cfg.radius=R.radius;cfg.img=R.img;$('radius').value=R.radius;$('rv').textContent=R.radius;$('fileName').textContent=R.img?'(current image is kept unless you choose a new one)':''}
+ pickMv=new MapView($('pickMap'),{center:cfg.center,radius:cfg.radius,onClick:c=>{cfg.center=c;pickMv.setCenter(c)}});
+ mapNote('');if(!edit)useMyLoc()}
+function cancelCreate(){if(editing){editing=false;show('lobby');renderLobby()}else show('home')}
+function saveRoom(){editing?doEdit():createRoom()}
+function doEdit(){const name=$('roomName').value.trim(),max=+$('maxPlayers').value;if(!name){alert('Enter a room name.');return}if(!(max>=4&&max<=40)){alert('Choose 4–40 players.');return}
+ editing=false;send({t:'edit',name,max,center:cfg.center,radius:cfg.radius,img:cfg.img});show('lobby');renderLobby()}
+function editRoom(){if(isHost&&room&&room.status==='lobby'){show('create');openCreate(true)}}
+function endMatch(){if(confirm('End the match and return everyone to the lobby?'))send({t:'reset'})}
+$('radius').oninput=e=>{cfg.radius=+e.target.value;$('rv').textContent=cfg.radius;pickMv&&pickMv.setRadius(cfg.radius)};
+function useMyLoc(){
+ if(!secure()){mapNote('Location only works on the secure https:// link of the game (your GitHub Pages link). You opened a downloaded or non-secure copy — open the https:// link instead.');return}
+ if(!navigator.geolocation){mapNote('This browser cannot read your location. Open the game in Chrome or Safari.');return}
+ mapNote('Finding your location… tap Allow if your phone asks.');
+ navigator.geolocation.getCurrentPosition(p=>{cfg.center={lat:p.coords.latitude,lng:p.coords.longitude};pickMv&&pickMv.setCenter(cfg.center);mapNote('')},
+  e=>mapNote(e&&e.code===1?'Location is blocked. Tap the lock icon next to the address → Permissions → Location → Allow, then reload and tap “Use my location”.':'Could not get your location (timed out). Turn on GPS, go near a window or outside, then tap “Use my location” again.'),{enableHighAccuracy:true,timeout:20000,maximumAge:0})}
+$('itemImage').onchange=e=>{const f=e.target.files[0];if(!f)return;const im=new Image();im.onload=()=>{const s=Math.min(1,480/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*s;c.height=im.height*s;c.getContext('2d').drawImage(im,0,0,c.width,c.height);cfg.img=c.toDataURL('image/jpeg',.7);$('fileName').textContent=f.name};im.src=URL.createObjectURL(f)};
+const newP=name=>({name,team:null,host:false,shown:null,slot:-1,out:false});
+function leave(){if(gps!=null&&navigator.geolocation)navigator.geolocation.clearWatch(gps);gps=null;if(peer)peer.destroy();peer=null;conns={};hostConn=null;mv=null;gpsOn=false;editing=false;gpsMsg('');netMsg('');myPos=null;room=null;R=null;isHost=false;off=0;lastState=0;snap=null;recon=false;seenFeed=-1;hostConn=null;show('home')}
+
+/* ---- networking: the host's browser is the game server (PeerJS, free) ---- */
+function createRoom(){
+ const title=$('roomName').value.trim(),max=+$('maxPlayers').value,code=($('roomCode').value.trim()||Math.random().toString(36).slice(2,8)).toUpperCase().replace(/[^A-Z0-9]/g,'');
+ if(!title||!code){alert('Enter a room name and a valid code.');return}if(!(max>=4&&max<=40)){alert('Choose 4–40 players.');return}
+ if(!window.Peer){alert('Multiplayer library failed to load — check your internet.');return}
+ const h=newP(me);h.host=true;R={name:title,code,max,center:cfg.center,radius:cfg.radius,img:cfg.img,status:'lobby',start:0,informer:null,lastTip:0,chat:[],feed:[],winner:null,players:[h]};isHost=true;curCode=code;
+ peer=new Peer('cp-'+code);
+ peer.on('open',()=>{room=view(me);render()});
+ peer.on('connection',c=>c.on('data',m=>{const e=handle(m,c);if(e)c.send({t:'err',msg:e,fatal:m.t==='join'})}));
+ peer.on('error',e=>{if(!room){alert(e.type==='unavailable-id'?'That room code is taken — choose another.':'Network error: '+e.type);leave()}});
+}
+function onData(m){
+ if(m.t==='state'){off=m.now-Date.now();lastState=Date.now();if(recon){recon=false;netMsg('')}if(!m.room.img&&room)m.room.img=room.img;room=m.room;render()}
+ else if(m.t==='snap'){const o=snap;snap={now:m.now,at:Date.now(),R:m.R};if(!snap.R.img&&o)snap.R.img=o.R.img}
+ else if(m.t==='err'){alert(m.msg);if(m.fatal)leave()}}
+function link(code,onErr){ // connect (or reconnect) to the host as a player
+ if(peer){try{peer.destroy()}catch(e){}}
+ const pr=peer=new Peer();
+ pr.on('open',()=>{const c=hostConn=pr.connect('cp-'+code,{reliable:true});
+  c.on('open',()=>{c.send({t:'join',name:me});if(myPos){lastSend=0;setMyPos(myPos)}});
+  c.on('data',onData);c.on('close',()=>{if(c===hostConn)hostLost()})});
+ pr.on('error',e=>{if(pr===peer&&onErr)onErr(e)})}
+function joinRoom(){
+ const code=$('joinCode').value.trim().toUpperCase(),msg=t=>{$('joinMsg').textContent=t};
+ if(!code){msg('Enter the room code.');return}if(!window.Peer){msg('Multiplayer library failed to load.');return}
+ msg('Connecting…');curCode=code;
+ link(code,e=>{if(!room){msg(e.type==='peer-unavailable'?'Room not found. Check the code and make sure the host is online.':'Network error: '+e.type);peer&&peer.destroy();peer=null}});
+}
+/* ---- the host left: a backup player takes over, everyone else reconnects ---- */
+function hostLost(){
+ if(isHost||!room||recon)return;recon=true;
+ if(room.backup===me&&snap){netMsg('The host left. You are taking over as host…');becomeHost()}
+ else{netMsg('The host left. Waiting for the new host — you stay in the match…');reconnectLoop(Date.now())}}
+function reconnectLoop(t0){
+ if(!recon||isHost)return;
+ if(Date.now()-t0>120000){recon=false;netMsg('');alert('The room could not be recovered. Ask for a new room code.');leave();return}
+ link(curCode,()=>{});setTimeout(()=>reconnectLoop(t0),4000)}
+function becomeHost(t0){
+ t0=t0||Date.now();if(isHost||!recon)return;
+ if(Date.now()-t0>120000){recon=false;netMsg('');alert('Could not take over the room. Ask for a new room code.');leave();return}
+ const s=snap,sh=s.at-s.now; // move times from the old host's clock to mine
+ R=JSON.parse(JSON.stringify(s.R));if(R.start)R.start+=sh;if(R.lastTip)R.lastTip+=sh;
+ R.players.forEach(x=>{if(x.shownAt)x.shownAt+=sh;if(x.outAt)x.outAt+=sh;x.host=x.name===me});
+ if(!R.img&&room)R.img=room.img;R.backup=null;R.feed.push('👑 '+me+' is now the host');
+ if(peer){try{peer.destroy()}catch(e){}}
+ const pr=peer=new Peer('cp-'+R.code);
+ pr.on('open',()=>{isHost=true;recon=false;netMsg('');conns={};hostConn=null;off=0;broadcast()});
+ pr.on('connection',c=>c.on('data',m=>{const e=handle(m,c);if(e)c.send({t:'err',msg:e,fatal:m.t==='join'})}));
+ pr.on('error',e=>{if(pr!==peer||isHost)return;R=null;link(curCode,()=>{});setTimeout(()=>{if(recon&&!isHost)becomeHost(t0)},6000)})}
+function send(m){if(isHost){const e=handle(m,null);if(e)alert(e)}else if(hostConn&&hostConn.open)hostConn.send(m)}
+function view(n){ // what each player is allowed to know
+ const p=R.players.find(x=>x.name===n),inf=R.informer===n,ok=(p&&p.team==='Chor')||inf,v=JSON.parse(JSON.stringify(R));
+ v.players.forEach((x,i)=>{const q=R.players[i];x.area=R.status==='lobby'?(q.pos?(dist(q.pos,R.center)<=R.radius?'in':'out'):'nogps'):undefined;delete x.pos;delete x.outAt});v.informer=ok?R.informer:null;v.chat=ok?R.chat:[];v.lastTip=inf?R.lastTip:0;return v}
+function broadcast(){lastBc=Date.now();
+ R.players.forEach(x=>{x.online=x.host||!!(conns[x.name]&&conns[x.name].open)});
+ const bk=R.players.find(x=>!x.host&&conns[x.name]&&conns[x.name].open);R.backup=bk?bk.name:null;
+ for(const n in conns){const c=conns[n];if(!c.open)continue;const v=view(n);if(c.imgSent)delete v.img;else c.imgSent=true;c.send({t:'state',now:Date.now(),room:v})}
+ const bc=bk&&conns[bk.name];if(bc){const s=JSON.parse(JSON.stringify(R));if(bc.snapImg)delete s.img;else bc.snapImg=true;bc.send({t:'snap',now:Date.now(),R:s})}
+ room=view(me);render()}
+function handle(m,c){
+ const n=c?(m.t==='join'?String(m.name).slice(0,24):c.pname):me;
+ if(m.t==='join'){let p=R.players.find(x=>x.name===n);
+  if(!p){if(R.status!=='lobby')return 'Match already started.';if(R.players.length>=R.max)return 'Room is full.';R.players.push(newP(n))}
+  c.pname=n;conns[n]=c;return broadcast()}
+ const p=R.players.find(x=>x.name===n);if(!p)return;
+ if(m.t==='pos'){if(m.pos&&isFinite(m.pos.lat)&&isFinite(m.pos.lng))p.pos={lat:+m.pos.lat,lng:+m.pos.lng};return}
+ if(m.t==='team'){if(R.status!=='lobby'||!['Chor','Police'].includes(m.team)||p.team===m.team)return;
+  if(R.players.filter(x=>x.team===m.team).length>=Math.ceil(R.max/2))return m.team+' team is full.';p.team=m.team}
+ else if(m.t==='start'){if(!p.host||R.status!=='lobby')return;
+  if(R.players.some(x=>!x.team))return 'Everyone must pick a team first.';
+  if(!R.players.some(x=>x.team==='Chor')||!R.players.some(x=>x.team==='Police'))return 'Need at least one Chor and one Police.';
+  R.status='live';R.start=Date.now()}
+ else if(m.t==='appoint'){if(p.team!=='Chor'||R.informer)return;const q=R.players.find(x=>x.name===m.name&&x.team==='Police'&&!x.out);if(q)R.informer=q.name}
+ else if(m.t==='chat'){const inf=R.informer===n;if(p.team!=='Chor'&&!inf)return;const t=String(m.text||'').trim().slice(0,200);if(!t)return;
+  if(inf){if(R.lastTip&&Date.now()-R.lastTip<TIP)return 'Next tip is not allowed yet.';R.lastTip=Date.now()}
+  R.chat.push({from:n,text:t,tip:inf})}
+ else if(m.t==='caught'){if(R.status!=='live'||p.team!=='Chor'||p.out||p.caught)return;const q=R.players.find(x=>x.name===m.by&&x.team==='Police'&&!x.out);if(!q)return 'Choose the Police player who caught you.';
+  if(!p.pos||!q.pos)return 'Waiting for GPS signal.';if(dist(p.pos,q.pos)>30)return q.name+' is not within 30 m of you.';
+  p.cpos=p.pos;p.caught=true;R.feed.push('🚔 '+p.name+' was caught by '+q.name);checkEnd()}
+ else if(m.t==='edit'){if(!p.host||R.status!=='lobby')return;const mx=+m.max;if(!(mx>=4&&mx<=40)||!String(m.name||'').trim())return 'Invalid room settings.';
+  const cap=Math.ceil(mx/2);if(R.players.length>mx||['Chor','Police'].some(t=>R.players.filter(y=>y.team===t).length>cap))return 'Too many players for that size — choose a bigger room.';
+  R.name=String(m.name).slice(0,35);R.max=mx;R.radius=+m.radius;R.center={lat:+m.center.lat,lng:+m.center.lng};if(m.img!==undefined)R.img=m.img;for(const k in conns)conns[k].imgSent=false}
+ else if(m.t==='reset'){if(!p.host||R.status==='lobby')return;R.status='lobby';R.winner=null;R.informer=null;R.chat=[];R.feed=[];R.lastTip=0;R.start=0;R.players.forEach(x=>{x.shown=null;x.shownAt=null;x.slot=-1;x.out=false;x.caught=false;x.cpos=null;x.outAt=null})}
+ else return;
+ broadcast()}
+function checkEnd(){if(R.status!=='live')return;const a=t=>R.players.some(x=>x.team===t&&!x.out&&!x.caught);
+ if(!a('Chor')){R.status='over';R.winner='Police'}else if(!a('Police')){R.status='over';R.winner='Chor'}}
+setInterval(()=>{ // server clock (host only): 10-min reveals, boundary rule, match end
+ if(isHost&&R&&Date.now()-lastBc>5000)broadcast();
+ if(!isHost||!R||R.status!=='live')return;const now=Date.now(),el=now-R.start;
+ if(el>=DUR){R.status='over';R.winner='Chor';return broadcast()}
+ const slot=Math.floor(el/REVEAL);let ch=false;
+ R.players.forEach(p=>{if(p.out||p.caught||!p.pos)return;
+  if(p.slot!==slot){p.shown=p.pos;p.shownAt=now;p.slot=slot;ch=true}
+  if(dist(p.pos,R.center)>R.radius){p.outAt=p.outAt||now;if(now-p.outAt>GRACE*1000){p.out=true;ch=true;R.feed.push('🚧 '+p.name+' left the area and is out')}}else p.outAt=null});
+ checkEnd();if(ch||R.status==='over')broadcast()},1000);
+
+/* ---- UI ---- */
+const meP=()=>room.players.find(p=>p.name===me);
+function render(){if(!room)return;if(editing&&cur==='create')return;if(room.status==='lobby'){mv=null;seenFeed=-1;show('lobby');renderLobby()}else{show('match');renderMatch()}}
+function copyCode(){navigator.clipboard?navigator.clipboard.writeText(room.code).then(()=>alert('Code copied!')):alert('Code: '+room.code)}
+function chooseTeam(t){send({t:'team',team:t})}
+function startMatch(){send({t:'start'})}
+function renderLobby(){
+ $('lobbyTitle').textContent=room.name;$('lobbyCode').textContent=room.code;$('capacity').textContent=room.players.length+' / '+room.max;$('lobbyRange').textContent=room.radius+' m';
+ $('lobbyImg').classList.toggle('hidden',!room.img);$('noImg').classList.toggle('hidden',!!room.img);if(room.img)$('lobbyImg').src=room.img;
+ for(const t of['Chor','Police']){const l=room.players.filter(p=>p.team===t);$(t.toLowerCase()+'Count').textContent=l.length;$(t.toLowerCase()+'Players').innerHTML=l.map(p=>'<div class="player"><span>'+esc(p.name)+(p.host?' <span class="pill">HOST</span>':'')+'</span><span class="small">'+({in:'📍 in area',out:'⚠ outside area',nogps:'no GPS yet'}[p.area]||'')+'</span></div>').join('')}
+ const un=room.players.filter(p=>!p.team).map(p=>esc(p.name)+' ('+({in:'in area',out:'outside area',nogps:'no GPS yet'}[p.area]||'?')+')');$('lobbyMsg').innerHTML=(un.length?'Waiting for team choice: '+un.join(', ')+'<br>':'')+(room.backup?'Backup host: '+esc(room.backup)+' (takes over if the host leaves)':'');
+ $('startBtn').classList.toggle('hidden',!meP().host);$('editBtn').classList.toggle('hidden',!meP().host);if(!gpsOn){gpsOn=true;startGps()}}
+function setTab(t){tab=t;if(room)renderMatch()}
+function renderMatch(){
+ const p=meP();if(!p)return;
+ if(!mv){mv=new MapView($('map'),{center:room.center,radius:room.radius,onClick:c=>{if(!$('useGps').checked)setMyPos(c)}});startGps()}
+ const inf=room.informer===me,chor=p.team==='Chor',chat=chor||inf;
+ if(seenFeed<0||room.feed.length<seenFeed)seenFeed=room.feed.length;else if(room.feed.length>seenFeed){const nw=room.feed.slice(seenFeed);seenFeed=room.feed.length;toast(nw[nw.length-1]);if(navigator.vibrate)navigator.vibrate([200,100,200])}
+ const chs=room.players.filter(x=>x.team==='Chor'),free=chs.filter(x=>!x.out&&!x.caught).length,cau=chs.filter(x=>x.caught).length;
+ $('score').innerHTML='🟠 Chors free: <b>'+free+'</b> of '+chs.length+' &nbsp;•&nbsp; 🚔 Caught: <b>'+cau+'</b>'+(room.backup?'<div class="small" style="margin-top:4px">Backup host: '+esc(room.backup)+'</div>':'');
+ $('role').innerHTML='<span class="pill">'+p.team.toUpperCase()+'</span>'+(inf?' <span class="pill gold">SECRET INFORMER</span>':'')+(p.out?' <span class="pill">OUT</span>':'')+(p.caught?' <span class="pill">CAUGHT</span>':'');
+ $('chatBtn').classList.toggle('hidden',!chat);$('endBtn').classList.toggle('hidden',!p.host);if(tab==='chat'&&!chat)tab='players';
+ const canCaught=p.team==='Chor'&&room.status==='live'&&!p.out&&!p.caught;$('arrestBtn').classList.toggle('hidden',!canCaught);if(tab==='arrest'&&!canCaught)tab='players';
+ for(const t of['players','item','chat','arrest'])$('tab-'+t).classList.toggle('hidden',t!==tab);
+ $('mPlayers').innerHTML=room.players.map(x=>'<div class="player'+((x.out||x.caught)?' out':'')+'"><span>'+esc(x.name)+' <span class="pill">'+x.team+'</span></span><span class="small">'+(x.out?'OUT':x.caught?'🚔 CAUGHT':x.online===false?'offline':x.shownAt?'seen '+new Date(x.shownAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'no signal')+'</span></div>').join('');
+ const ch=room.players.filter(x=>x.team==='Police'&&!x.out).map(x=>esc(x.name)),sg=ch.join('|');if(p.team==='Chor'&&$('arSel').dataset.sig!==sg){$('arSel').innerHTML=ch.map(x=>'<option>'+x+'</option>').join('');$('arSel').dataset.sig=sg}
+ $('feed').innerHTML=(room.feed||[]).slice(-8).map(esc).join('<br>');
+ $('itemImg').classList.toggle('hidden',!room.img);$('itemNone').classList.toggle('hidden',!!room.img);if(room.img)$('itemImg').src=room.img;
+ if(chat){
+  let ap='';if(chor){if(room.informer)ap='<div class="notice" style="margin-top:0">🕵 Your informer: <b>'+esc(room.informer)+'</b> (hidden from other Police)</div>';
+   else ap='<div class="row" style="margin-bottom:10px"><select id="apSel" class="inp">'+room.players.filter(x=>x.team==='Police'&&!x.out).map(x=>'<option>'+esc(x.name)+'</option>').join('')+'</select><button style="flex:0 0 auto" onclick="appoint()">Appoint informer</button></div>'}
+  else ap='<div class="notice" style="margin-top:0">The Chors secretly appointed you. You may send one tip every 10 minutes.</div>';
+  const sig=ap+room.informer;if($('appoint').dataset.sig!==sig){$('appoint').innerHTML=ap;$('appoint').dataset.sig=sig}
+  $('chatList').innerHTML=room.chat.map(m=>'<div class="msg'+(m.tip?' tip':'')+'"><b>'+(m.tip?'🕵 ':'')+esc(m.from)+':</b> '+esc(m.text)+'</div>').join('')||'<div class="small">No messages yet.</div>';$('chatList').scrollTop=1e9}
+ drawMarkers();tick()}
+function drawMarkers(){
+ if(!mv)return;const l=[];
+ room.players.forEach(x=>{if(x.caught&&x.cpos&&!x.out)l.push({lat:x.cpos.lat,lng:x.cpos.lng,label:'✖',cls:'X',title:x.name+' (caught)'});if(x.shown&&!x.out&&!x.caught&&x.name!==me)l.push({lat:x.shown.lat,lng:x.shown.lng,label:x.team[0],cls:x.team[0],title:x.name+' ('+x.team+')'})});
+ if(myPos)l.push({lat:myPos.lat,lng:myPos.lng,label:'ME',cls:'me',title:'You'});mv.setMarkers(l)}
+function setMyPos(p){myPos=p;drawMarkers();if(Date.now()-lastSend>5000){lastSend=Date.now();send({t:'pos',pos:p})}}
+function startGps(){
+ if(gps!=null){navigator.geolocation&&navigator.geolocation.clearWatch(gps);gps=null}
+ if(!$('useGps').checked){gpsMsg('');if(!myPos&&room)setMyPos(room.center);return}
+ if(!secure()){gpsMsg('Location only works on the secure https:// link of the game. Open that link, not a downloaded copy.');return}
+ if(!navigator.geolocation){gpsMsg('This browser cannot read your location. Open the game in Chrome or Safari.');return}
+ gpsMsg('Finding your real location… allow Location when your phone asks.');
+ gps=navigator.geolocation.watchPosition(p=>{gpsMsg('');setMyPos({lat:p.coords.latitude,lng:p.coords.longitude})},e=>$('useGps').checked&&gpsMsg(e&&e.code===1?'Location is blocked, so you cannot appear on the map. Allow Location for this site (lock icon next to the address → Permissions), then reload.':'Cannot find your location yet. Turn on GPS / Location and go outside.'),{enableHighAccuracy:true,maximumAge:5000,timeout:30000})}
+function iWasCaught(){const n=$('arSel').value;if(n&&confirm('Confirm: you were caught by '+n+'?'))send({t:'caught',by:n})}
+function appoint(){const n=$('apSel')&&$('apSel').value;if(n)send({t:'appoint',name:n})}
+function sendChat(){const t=$('chatIn').value.trim();if(t){send({t:'chat',text:t});$('chatIn').value=''}}
+$('chatIn').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat()});
+function tick(){ // display only; the host enforces the rules
+ if(!isHost&&room&&!recon&&lastState&&Date.now()-lastState>20000)hostLost();
+ if(!room||room.status==='lobby')return;const now=T(),el=now-room.start,p=meP();if(!p)return;const bar=$('alertBar');
+ const over=room.status==='over';
+ $('tLeft').textContent=over?'00:00':fmt(DUR-el);$('tReveal').textContent=over?'—':fmt(REVEAL-el%REVEAL);
+ let msg='';
+ if(over)msg='Match over! '+(room.winner==='Police'?'🚔 Police win!':'🟠 Chors win!');
+ else if(p.caught)msg='You were caught!';
+ else if(p.out)msg='You were disqualified for leaving the area.';
+ else if(myPos){const d=dist(myPos,room.center);
+  if(d>room.radius)msg='⚠ Outside the game area! Return within 30 seconds or you are out.';
+  else if(d>room.radius-50)msg='⚠ You are within 50 m of the boundary.'}
+ bar.textContent=msg;bar.classList.toggle('hidden',!msg);
+ const inf=room.informer===me,wait=inf?room.lastTip+TIP-now:0,blocked=inf&&wait>0;
+ $('chatSend').disabled=blocked;$('tipNote').textContent=blocked?'Next informer tip in '+fmt(wait):inf?'You can send a tip now.':'';
+}
+setInterval(tick,1000);
+</script>
+</body></html>
